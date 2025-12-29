@@ -6,10 +6,11 @@ on:
   workflow_dispatch:
 
 env:
-  IMAGE_NAME: frontend
+  BACKEND_IMAGE_NAME: jokes
+  FRONTEND_IMAGE_NAME: frontend
 
 jobs:
-  push:
+  push_backend:
     runs-on: ubuntu-latest
 
     steps:
@@ -26,7 +27,7 @@ jobs:
         id: version
         run: |
           set -e
-          IMAGE="${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}"
+          IMAGE="${{ secrets.DOCKER_USERNAME }}/${{ env.BACKEND_IMAGE_NAME }}"
           TAG=$(docker manifest inspect $IMAGE:version-tracker --insecure --verbose 2>/dev/null | jq -r '.Descriptor.annotations."org.opencontainers.image.version"' || echo "v1.0.0")
           NUM=$(echo $TAG | awk -F. '{print $3+1}')
           echo "NEW=v1.0.$NUM" >> $GITHUB_OUTPUT
@@ -38,13 +39,56 @@ jobs:
           file: ./API-jokes/Dockerfile.prod
           push: true
           tags: |
-            ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:latest
-            ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.NEW }}
+            ${{ secrets.DOCKER_USERNAME }}/${{ env.BACKEND_IMAGE_NAME }}:latest
+            ${{ secrets.DOCKER_USERNAME }}/${{ env.BACKEND_IMAGE_NAME }}:${{ steps.version.outputs.NEW }}
           labels: |
             org.opencontainers.image.version=${{ steps.version.outputs.NEW }}
 
       - name: Update tracker tag
         run: |
           docker buildx imagetools create \
-            -t ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:version-tracker \
-            ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.NEW }}
+            -t ${{ secrets.DOCKER_USERNAME }}/${{ env.BACKEND_IMAGE_NAME }}:version-tracker \
+            ${{ secrets.DOCKER_USERNAME }}/${{ env.BACKEND_IMAGE_NAME }}:${{ steps.version.outputs.NEW }}
+
+  push_frontend:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: checkout code to repo
+        uses: actions/checkout@v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Get latest version
+        id: version
+        run: |
+          set -e
+          IMAGE="${{ secrets.DOCKER_USERNAME }}/${{ env.FRONTEND_IMAGE_NAME }}"
+          TAG=$(docker manifest inspect $IMAGE:version-tracker --insecure --verbose 2>/dev/null | jq -r '.Descriptor.annotations."org.opencontainers.image.version"' || echo "v1.0.0")
+          NUM=$(echo $TAG | awk -F. '{print $3+1}')
+          echo "NEW=v1.0.$NUM" >> $GITHUB_OUTPUT
+
+      - name: Build & Push
+        uses: docker/build-push-action@v6
+        with:
+          context: ./react-client
+          file: ./react-client/Dockerfile.prod
+          push: true
+          build-args: |
+            VITE_API_BASE_URL=http://jokesLB-1114119934.eu-north-1.elb.amazonaws.com
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/${{ env.FRONTEND_IMAGE_NAME }}:latest
+            ${{ secrets.DOCKER_USERNAME }}/${{ env.FRONTEND_IMAGE_NAME }}:${{ steps.version.outputs.NEW }}
+          labels: |
+            org.opencontainers.image.version=${{ steps.version.outputs.NEW }}
+
+      - name: Update tracker tag
+        run: |
+          docker buildx imagetools create \
+            -t ${{ secrets.DOCKER_USERNAME }}/${{ env.FRONTEND_IMAGE_NAME }}:version-tracker \
+            ${{ secrets.DOCKER_USERNAME }}/${{ env.FRONTEND_IMAGE_NAME }}:${{ steps.version.outputs.NEW }}
+
