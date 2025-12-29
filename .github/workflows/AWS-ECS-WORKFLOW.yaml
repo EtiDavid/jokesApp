@@ -13,7 +13,7 @@ env:
   FRONTEND_IMAGE: frontend
   TASK_DEF_FILE: ecs-task-def.json
   Cluster_Name: jokes-cluster
-  backend_container: node-app-container
+  backend_container: jokes-task-definition
   frontend_container: frontend
   service_Name: jokes-task-definition-service
   AWS_REGION: eu-north-1
