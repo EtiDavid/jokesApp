@@ -59,7 +59,7 @@ jobs:
           file: ./API-jokes/Dockerfile.prod
           push: ${{ steps.vars.outputs.IS_RELEASE == 'true' }}
           tags: |
-            ${{ secrets.DOCKER_USERNAME }}/${{ env.FRONTEND_IMAGE }}${{ steps.vars.outputs.IS_RELEASE == 'true' && ':latest' || '' }}
+            ${{ secrets.DOCKER_USERNAME }}/${{ env.BACKEND_IMAGE }}${{ steps.vars.outputs.IS_RELEASE == 'true' && ':latest' || '' }}
 
             ${{ secrets.DOCKER_USERNAME }}/${{ env.BACKEND_IMAGE }}:${{ steps.vars.outputs.VERSION }}
           
