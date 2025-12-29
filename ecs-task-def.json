@@ -1,0 +1,133 @@
+{
+    "compatibilities": [
+        "EC2",
+        "FARGATE",
+        "MANAGED_INSTANCES"
+    ],
+    "containerDefinitions": [
+        {
+            "cpu": 0,
+            "environment": [
+                {
+                    "name": "MONGOURI",
+                    "value": "mongodb+srv://etidavid:Y9M8XfWNFGatLUGb@daviddb.jwihjz2.mongodb.net/?appName=davidDB"
+                }
+            ],
+            "environmentFiles": [],
+            "essential": true,
+            "healthCheck": {
+                "command": [
+                    "CMD-SHELL",
+                    "wget --spider -q http://localhost:5000/ || exit 1"
+                ],
+                "interval": 30,
+                "retries": 2,
+                "startPeriod": 5,
+                "timeout": 5
+            },
+            "image": "davidchimere/jokes",
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": "/ecs/jokes-task-definition",
+                    "awslogs-create-group": "true",
+                    "awslogs-region": "eu-north-1",
+                    "awslogs-stream-prefix": "ecs"
+                },
+                "secretOptions": []
+            },
+            "mountPoints": [],
+            "name": "jokes-task-definition",
+            "portMappings": [
+                {
+                    "appProtocol": "http",
+                    "containerPort": 5000,
+                    "hostPort": 5000,
+                    "name": "5000",
+                    "protocol": "tcp"
+                }
+            ],
+            "systemControls": [],
+            "ulimits": [],
+            "volumesFrom": []
+        },
+        {
+            "cpu": 0,
+            "environment": [],
+            "environmentFiles": [],
+            "essential": true,
+            "healthCheck": {
+                "command": [
+                    "CMD-SHELL",
+                    "wget --spider -q http://localhost:80/ || exit 1"
+                ],
+                "interval": 30,
+                "retries": 2,
+                "startPeriod": 5,
+                "timeout": 5
+            },
+            "image": "davidchimere/frontend",
+            "mountPoints": [],
+            "name": "frontend",
+            "portMappings": [
+                {
+                    "appProtocol": "http",
+                    "containerPort": 80,
+                    "hostPort": 80,
+                    "name": "80",
+                    "protocol": "tcp"
+                }
+            ],
+            "systemControls": [],
+            "volumesFrom": []
+        }
+    ],
+    "cpu": "256",
+    "enableFaultInjection": false,
+    "executionRoleArn": "arn:aws:iam::100067510402:role/ecsTaskExecutionRole",
+    "family": "jokes-task-definition",
+    "memory": "1024",
+    "networkMode": "awsvpc",
+    "placementConstraints": [],
+    "registeredAt": "2025-12-28T11:41:20.373Z",
+    "registeredBy": "arn:aws:iam::100067510402:root",
+    "requiresAttributes": [
+        {
+            "name": "com.amazonaws.ecs.capability.logging-driver.awslogs"
+        },
+        {
+            "name": "ecs.capability.execution-role-awslogs"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.19"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.task-iam-role"
+        },
+        {
+            "name": "ecs.capability.container-health-check"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.18"
+        },
+        {
+            "name": "ecs.capability.task-eni"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.29"
+        }
+    ],
+    "requiresCompatibilities": [
+        "FARGATE"
+    ],
+    "revision": 5,
+    "runtimePlatform": {
+        "cpuArchitecture": "X86_64",
+        "operatingSystemFamily": "LINUX"
+    },
+    "status": "ACTIVE",
+    "taskDefinitionArn": "arn:aws:ecs:eu-north-1:100067510402:task-definition/jokes-task-definition:5",
+    "taskRoleArn": "arn:aws:iam::100067510402:role/ecsTaskExecutionRole",
+    "volumes": [],
+    "tags": []
+}
