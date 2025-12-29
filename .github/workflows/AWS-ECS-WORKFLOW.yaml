@@ -37,7 +37,7 @@ jobs:
             echo "IS_RELEASE=true" >> $GITHUB_OUTPUT
             
           else
-            echo "VERSION=dev-${GITHUB_SHA::7}" 
+            VERSION="dev-${GITHUB_SHA::7}" 
             echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
             echo "IS_RELEASE=false" >> $GITHUB_OUTPUT
             
@@ -59,7 +59,8 @@ jobs:
           file: ./API-jokes/Dockerfile.prod
           push: ${{ steps.vars.outputs.IS_RELEASE == 'true' }}
           tags: |
-            ${{ secrets.DOCKER_USERNAME }}/${{ env.BACKEND_IMAGE }}:latest
+            ${{ secrets.DOCKER_USERNAME }}/${{ env.FRONTEND_IMAGE }}${{ steps.vars.outputs.IS_RELEASE == 'true' && ':latest' || '' }}
+
             ${{ secrets.DOCKER_USERNAME }}/${{ env.BACKEND_IMAGE }}:${{ steps.vars.outputs.VERSION }}
           
 
@@ -88,7 +89,8 @@ jobs:
 
           push: ${{ needs.build_backend.outputs.IS_RELEASE == 'true' }}
           tags: |
-            ${{ secrets.DOCKER_USERNAME }}/${{ env.FRONTEND_IMAGE }}:latest
+            ${{ secrets.DOCKER_USERNAME }}/${{ env.FRONTEND_IMAGE }}${{ steps.vars.outputs.IS_RELEASE == 'true' && ':latest' || '' }}
+
             ${{ secrets.DOCKER_USERNAME }}/${{ env.FRONTEND_IMAGE }}:${{ needs.build_backend.outputs.VERSION }}
 
   deploy_to_AWS:
